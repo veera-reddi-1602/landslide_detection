@@ -5,7 +5,12 @@ from streamlit_folium import st_folium
 import pandas as pd
 
 st.set_page_config(page_title="NER Landslide Early Warning", layout="wide")
-st.title("⛰️ AI-Based Landslide Early Warning - NER ")
+
+
+st.image("https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg", width=80)
+st.caption("MDoNER | North Eastern Region - Disaster Management Cell")
+
+st.title("IN NER  Landslide Early Warning SYSTEM - MEGALAYA PILOT ")
 st.markdown("Ministry of Development of North Eastern Region (MDoNER)")
 
 # Load model
