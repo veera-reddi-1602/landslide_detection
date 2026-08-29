@@ -5,7 +5,7 @@ from streamlit_folium import st_folium
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="MDoNER - NER Landslide Command Center", layout="wide", page_icon="⛰️")
+st.set_page_config(page_title="veera - NER Landslide Command Center", layout="wide", page_icon="⛰️")
 
 # Header
 col_logo, col_title = st.columns([1, 8])
