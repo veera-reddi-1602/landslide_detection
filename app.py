@@ -3,39 +3,48 @@ from streamlit_folium import st_folium
 import datetime, random, os, numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-st.set_page_config(page_title="NER Kavach - 100% Unique", layout="wide", page_icon="🛡️")
+st.set_page_config(page_title="NER Kavach - Clear UI", layout="wide", page_icon="🛡️")
 
-# --- ULTRA UNIQUE CSS ---
+# --- FIXED LIGHT THEME CSS - HIGH READABILITY ---
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
-.stApp { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); font-family: 'Space Grotesk', sans-serif; }
-h1, h2, h3 { color: #f8fafc!important; }
-div[data-testid="stMetric"] { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; }
-div[data-testid="stMetric"]:hover { transform: translateY(-5px); transition: 0.3s; border-color: #38bdf8; box-shadow: 0 0 20px rgba(56,189,248,0.3); }
-.stTabs [data-baseweb="tab-list"] { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 5px; }
-.stTabs [data-baseweb="tab"] { border-radius: 8px; color: #94a3b8; }
-.stTabs [aria-selected="true"] { background: #38bdf8!important; color: black!important; font-weight: bold; }
-.ticker { background: linear-gradient(90deg, #ef4444, #f97316); color: white; padding: 8px; border-radius: 8px; font-weight: bold; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.8 } }
-.village-card { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; margin: 5px 0; cursor: pointer; }
-.village-card:hover { background: rgba(56,189,248,0.15); border-color: #38bdf8; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+.stApp { background: #f8fafc; font-family: 'Inter', sans-serif; }
+h1, h2, h3, h4, p, span, label { color: #0f172a!important; }
+div[data-testid="stMetric"] {
+    background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+div[data-testid="stMetric"]:hover { transform: translateY(-3px); transition: 0.2s; border-color: #0ea5e9; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+.stTabs [data-baseweb="tab-list"] { background: white; border-radius: 12px; padding: 6px; border: 1px solid #e2e8f0; }
+.stTabs [data-baseweb="tab"] { border-radius: 8px; color: #475569; font-weight: 600; }
+.stTabs [aria-selected="true"] { background: #0ea5e9!important; color: white!important; }
+.ticker {
+    background: linear-gradient(90deg, #dc2626, #ea580c); color: white!important;
+    padding: 10px 16px; border-radius: 10px; font-weight: 700; letter-spacing: 0.5px;
+}
+.ticker p,.ticker span { color: white!important; }
+.village-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin: 8px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.village-card:hover { border-color: #0ea5e9; box-shadow: 0 4px 12px rgba(14,165,233,0.15); }
+.village-card b,.village-card span,.village-card small { color: #0f172a!important; }
+[data-testid="stSidebar"] { background: white; border-right: 1px solid #e2e8f0; }
+[data-testid="stSidebar"] * { color: #0f172a!important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER WITH LIVE CLOCK ---
-import time
+# --- HEADER ---
 now = datetime.datetime.now().strftime("%d %b %Y | %I:%M %p IST")
 st.markdown(f"""
-<div style="display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.05); padding: 15px 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
-<div><h1 style="margin:0; font-size: 32px;">🛡️ NER KAVACH</h1><p style="margin:0; color:#94a3b8;">MDoNER Command Center | Meghalaya Pilot | SIH26001</p></div>
-<div style="text-align:right;"><p style="margin:0; color:#38bdf8; font-weight:bold;">{now}</p><p style="margin:0; color:#22c55e;">● LIVE | IMD + ISRO + NASA Connected</p></div>
+<div style="display:flex; justify-content:space-between; align-items:center; background: white; padding: 18px 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+<div><h1 style="margin:0; font-size: 30px; color:#0f172a!important;">🛡️ NER KAVACH</h1><p style="margin:4px 0 0 0; color:#64748b!important;">MDoNER Command Center | Meghalaya Pilot | SIH26001</p></div>
+<div style="text-align:right;"><p style="margin:0; color:#0ea5e9!important; font-weight:700;">{now}</p><p style="margin:0; color:#16a34a!important; font-weight:600;">● LIVE | IMD + ISRO + NASA Connected</p></div>
 </div>
 """, unsafe_allow_html=True)
 
-# --- LIVE TICKER ---
-high_count = random.randint(1,3)
-st.markdown(f'<div class="ticker">🚨 LIVE ALERT: {high_count} villages in HIGH RISK zone | IMD predicts 320mm rainfall in next 24H in East Khasi Hills | NH-6 Blocked at Cherapunji | Evacuation Advised</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="ticker">🚨 LIVE ALERT: IMD predicts 320mm rainfall in next 24H in East Khasi Hills | NH-6 Blocked at Cherapunji | Evacuation Advised | 3 Villages HIGH Risk</div>', unsafe_allow_html=True)
 st.write("")
 
 # --- MODEL ---
@@ -50,24 +59,23 @@ def load_model():
     return RandomForestClassifier().fit(X,y)
 model = load_model()
 
-# --- SIDEBAR - INTERACTIVE ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.markdown("### 🎛️ MISSION CONTROL")
-    district = st.selectbox("📍 Select District", ["East Khasi Hills", "West Sikkim", "Papum Pare"], index=0)
-    st.markdown("---")
+    district = st.selectbox("📍 District", ["East Khasi Hills", "West Sikkim", "Papum Pare"])
     st.markdown("#### 🌧️ Live Environment")
     rain = st.slider("IMD Rainfall Forecast (mm)", 0, 600, 320, 10)
     soil = st.slider("NASA Soil Moisture %", 0, 100, 82)
-    layer = st.select_slider("🛰️ Satellite", options=["Bhuvan 2D","Bhuvan 3D","Esri Sat","OSM"])
+    layer = st.selectbox("🛰️ Satellite Layer", ["ISRO Bhuvan","Esri Satellite","OpenStreetMap"])
     st.markdown("---")
-    search = st.text_input("🔍 Search Village", placeholder="Type Cherapunji...")
+    search = st.text_input("🔍 Search Village", placeholder="Cherapunji...")
     st.metric("🛰️ IoT - Cherapunji", f"{random.randint(78,96)}%", "↑ Critical")
     st.metric("📡 IoT - Shillong", f"{random.randint(32,48)}%", "↓ Stable")
-    if st.button("🆘 SOS - Send SOS to NDRF", use_container_width=True):
-        st.error("SOS Sent to NDRF Shillong + DC Office!")
+    if st.button("🆘 SOS - Send to NDRF", use_container_width=True, type="primary"):
+        st.error("SOS Sent to NDRF + Collector!")
         st.balloons()
 
-# --- VILLAGES + INTERACTIVE SELECTION ---
+# --- VILLAGES ---
 base = [
     {"name":"Cherapunji","lat":25.30,"lon":91.70,"slope":45,"elev":1484,"road":50,"pop":10000,"img":"🌧️"},
     {"name":"Mawsynram","lat":25.29,"lon":91.58,"slope":48,"elev":1400,"road":70,"pop":1200,"img":"⛰️"},
@@ -81,17 +89,17 @@ for v in base:
     prob = model.predict_proba([[v['slope'], rain, v['elev'], v['road']]])[0][1]
     prob = min(0.99, prob + (rain-200)/700 + (soil-50)/180)
     risk = "HIGH" if prob>0.7 else "MEDIUM" if prob>0.4 else "LOW"
-    color = "red" if risk=="HIGH" else "orange" if risk=="MEDIUM" else "#22c55e"
+    color = "#dc2626" if risk=="HIGH" else "#ea580c" if risk=="MEDIUM" else "#16a34a"
     villages.append({**v, "prob":prob, "risk":risk, "color":color})
-if not villages: villages = base[:1] # fallback
+if not villages: villages = base[:2]
 df = pd.DataFrame(villages)
 
-# --- TOP METRICS - INTERACTIVE CARDS ---
+# --- TOP METRICS ---
 m1,m2,m3,m4 = st.columns(4)
-m1.metric("🔴 High Risk Zones", f"{sum(1 for v in villages if v['risk']=='HIGH')}", f"{rain}mm rain")
-m2.metric("👥 Population at Risk", f"{sum(v['pop'] for v in villages if v['risk']=='HIGH'):,}")
-m3.metric("🛣️ Roads Blocked", "2", "NH-6, SH-5")
-m4.metric("🏠 Shelters Ready", "3", "1200 capacity")
+m1.metric("🔴 High Risk", f"{sum(1 for v in villages if v['risk']=='HIGH')}", f"{rain}mm")
+m2.metric("👥 At Risk", f"{sum(v['pop'] for v in villages if v['risk']=='HIGH'):,}")
+m3.metric("🛣️ Blocked", "2 Roads", "NH-6")
+m4.metric("🏠 Shelters", "3 Ready", "1200 cap")
 st.write("")
 
 # --- 7 TABS ---
@@ -100,87 +108,56 @@ t1,t2,t3,t4,t5,t6,t7 = st.tabs(["🗺️ Live Map","📊 Analytics","🔮 AI For
 with t1:
     left, right = st.columns([3,1.2])
     with left:
-        # Interactive village selector
-        sel = st.selectbox("🎯 Focus on Village (Map will zoom)", [v['name'] for v in villages], index=0)
+        sel = st.selectbox("🎯 Focus Village", [v['name'] for v in villages], index=0)
         sel_v = next(v for v in villages if v['name']==sel)
-        m = folium.Map(location=[sel_v['lat'], sel_v['lon']], zoom_start=12, tiles="OpenStreetMap")
+        m = folium.Map(location=[sel_v['lat'], sel_v['lon']], zoom_start=11, tiles="OpenStreetMap")
         for v in villages:
-            folium.CircleMarker([v['lat'],v['lon']], radius=20+v['prob']*35, color=v['color'], fill=True, fill_color=v['color'], fill_opacity=0.7,
-                popup=f"<b>{v['img']} {v['name']}</b><br>Risk {v['risk']} {v['prob']*100:.0f}%<br>Click card on right to focus").add_to(m)
-        st_folium(m, width=800, height=500, key="main_map")
+            folium.CircleMarker([v['lat'],v['lon']], radius=22+v['prob']*35, color=v['color'], fill=True, fill_color=v['color'], fill_opacity=0.7,
+                popup=f"{v['name']} {v['risk']} {v['prob']*100:.0f}%").add_to(m)
+        st_folium(m, width=850, height=520, key="map")
     with right:
-        st.markdown("#### 🏘️ Village Status - Click to Focus")
+        st.markdown("#### 🏘️ Villages")
         for v in villages:
-            st.markdown(f"""
-            <div class="village-card" style="border-left: 5px solid {v['color']}">
-                <b>{v['img']} {v['name']}</b><br>
-                <span style="color:{v['color']}; font-weight:bold;">{v['risk']} {v['prob']*100:.0f}%</span> | Pop: {v['pop']}<br>
-                <small>Slope {v['slope']}° | Elev {v['elev']}m</small>
-            </div>
-            """, unsafe_allow_html=True)
-        if st.button("🧭 Show Safe Route to Shelter", use_container_width=True):
-            st.success("Safe Route: Cherapunji → Shillong Camp (Green Corridor) - 12km")
+            st.markdown(f'<div class="village-card" style="border-left:5px solid {v["color"]}"><b>{v["img"]} {v["name"]}</b><br><span style="color:{v["color"]}!important; font-weight:700;">{v["risk"]} {v["prob"]*100:.0f}%</span> | Pop {v["pop"]}<br><small>Slope {v["slope"]}° | {v["elev"]}m</small></div>', unsafe_allow_html=True)
+        if st.button("🧭 Safe Route", use_container_width=True): st.success("Safe: Cherapunji → Shillong Camp 12km")
 
 with t2:
-    st.markdown("#### 📊 Risk Analytics - Interactive")
     c1,c2 = st.columns(2)
-    with c1:
-        fig = px.bar(df, x='name', y='prob', color='risk', color_discrete_map={'HIGH':'#ef4444','MEDIUM':'#f59e0b','LOW':'#22c55e'}, title="Risk by Village")
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-        st.plotly_chart(fig, use_container_width=True)
-    with c2:
-        fig2 = px.scatter(df, x='slope', y='prob', size='pop', color='risk', hover_name='name', title="Why Landslide? Slope vs Probability")
-        fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-        st.plotly_chart(fig2, use_container_width=True)
+    with c1: st.plotly_chart(px.bar(df, x='name', y='prob', color='risk', color_discrete_map={'HIGH':'#dc2626','MEDIUM':'#ea580c','LOW':'#16a34a'}, title="Risk by Village"), use_container_width=True)
+    with c2: st.plotly_chart(px.scatter(df, x='slope', y='prob', size='pop', color='risk', hover_name='name', title="Slope vs Risk"), use_container_width=True)
 
 with t3:
-    st.markdown("#### 🔮 7-Day LSTM Forecast + SHAP Explainability")
     dates = [datetime.date.today()+datetime.timedelta(days=i) for i in range(7)]
-    probs = [min(0.95, villages[0]['prob']+random.uniform(-0.1,0.1)+i*0.03) for i in range(7)]
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=dates, y=probs, mode='lines+markers+text', text=[f"{p*100:.0f}%" for p in probs], textposition="top center", line=dict(color='#38bdf8', width=4)))
-    fig.add_hline(y=0.7, line_dash="dash", line_color="red", annotation_text="EVACUATE LINE")
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white', title="Landslide Probability Next 7 Days")
+    probs = [min(0.95, villages[0]['prob']+random.uniform(-0.1,0.1)+i*0.02) for i in range(7)]
+    fig = go.Figure(); fig.add_trace(go.Scatter(x=dates, y=probs, mode='lines+markers', line=dict(color='#0ea5e9', width=4))); fig.add_hline(y=0.7, line_dash="dash", line_color="red")
     st.plotly_chart(fig, use_container_width=True)
-    shap = pd.DataFrame({"Feature":["IMD Rainfall","Slope Angle","Soil Moisture","Elevation"], "Impact":[0.45,0.30,0.15,0.10]})
-    st.plotly_chart(px.bar(shap, x="Impact", y="Feature", orientation='h', color="Impact", title="SHAP - Why AI Says HIGH Risk?", color_continuous_scale="Blues"), use_container_width=True)
+    shap = pd.DataFrame({"Feature":["Rainfall","Slope","Soil Moisture","Elevation"], "Impact":[0.45,0.30,0.15,0.10]})
+    st.plotly_chart(px.bar(shap, x="Impact", y="Feature", orientation='h', title="SHAP - Why HIGH Risk?"), use_container_width=True)
 
 with t4:
-    st.markdown("#### 🚨 Alert Center - Most Interactive")
     col_a, col_b = st.columns([2,1])
     with col_a:
-        lang = st.radio("Send Alert in:", ["English","Hindi","Khasi"], horizontal=True)
-        msgs = {"English":f"EVACUATE {district} {rain}mm rain HIGH risk","Hindi":"भारी भूस्खलन चेतावनी - सुरक्षित स्थान पर जाएं","Khasi":"Ka jingmaham - To leit sha jaka ba shngain"}
-        st.code(msgs[lang], language="text")
-        if st.button("🚀 Send SMS + WhatsApp + Siren", use_container_width=True):
-            st.success("✅ Sent to 5,230 citizens + Collector + NDRF | Siren ON in Cherapunji"); st.balloons()
-            st.snow()
+        lang = st.radio("Language", ["English","Hindi","Khasi"], horizontal=True)
+        msgs = {"English":f"EVACUATE {district} {rain}mm HIGH risk","Hindi":"भारी भूस्खलन चेतावनी - सुरक्षित स्थान पर जाएं","Khasi":"Ka jingmaham - leit sha jaka ba shngain"}
+        st.info(msgs[lang])
+        if st.button("🚀 Send SMS + WhatsApp + Siren", use_container_width=True, type="primary"):
+            st.success("✅ Sent to 5230 citizens + DC + NDRF | Siren ON"); st.balloons()
     with col_b:
-        st.markdown("**📞 Emergency Contacts**")
-        st.markdown("Collector: 0364-2222345\nNDRF: 1070\nMDoNER: 011-23022445")
-        if st.button("📄 Generate Collector PDF"): st.success("PDF Ready: NER_KAVACH_Report.pdf")
+        st.markdown("**📞 Emergency**\nCollector: 0364-2222345\nNDRF: 1070")
+        if st.button("📄 Generate PDF"): st.success("PDF Ready")
 
 with t5:
-    st.markdown("#### 👥 Crowdsource - Gamified")
-    c1,c2 = st.columns([2,1])
-    with c1:
-        with st.form("crowd"):
-            st.text_input("Village"); st.file_uploader("📸 Upload Crack/Rain Photo"); st.text_area("Observation")
-            if st.form_submit_button("📤 Submit & Earn 10 Points"): st.success("Report Verified by AI! You are Rank #3 in Meghalaya")
-    with c2:
-        st.markdown("**🏆 Citizen Leaderboard**")
-        lb = pd.DataFrame([{"Name":"A. Syiem","Village":"Cherapunji","Points":120},{"Name":"You","Village":district,"Points":80},{"Name":"R. Das","Village":"Shillong","Points":70}])
-        st.dataframe(lb, use_container_width=True)
+    with st.form("crowd"):
+        st.text_input("Village"); st.file_uploader("Photo"); st.text_area("Observation")
+        if st.form_submit_button("Submit & Earn 10 Points"): st.success("Verified by AI! Rank #3")
+    st.dataframe(pd.DataFrame([{"Name":"A. Syiem","Points":120},{"Name":"You","Points":80},{"Name":"R. Das","Points":70}]), use_container_width=True)
 
 with t6:
-    st.markdown("#### 📜 Historical Trend - Interactive Heatmap")
-    h = pd.DataFrame([{"year":y,"landslides":random.randint(15,45),"deaths":random.randint(10,90)} for y in range(2018,2025)])
-    st.plotly_chart(px.area(h, x="year", y="landslides", title="Landslides Rising Due to Climate Change - Meghalaya"), use_container_width=True)
+    h = pd.DataFrame([{"year":y,"landslides":random.randint(15,45)} for y in range(2018,2025)])
+    st.plotly_chart(px.area(h, x="year", y="landslides", title="Landslides Rising 2018-2024"), use_container_width=True)
 
 with t7:
-    st.markdown("#### 🔐 MDoNER Admin Login")
-    u = st.text_input("Official ID", placeholder="admin")
-    p = st.text_input("Password", type="password", placeholder="admin")
-    if st.button("Login to Command Center"):
-        if u=="admin": st.success("Welcome, DC East Khasi Hills. 2 evacuations pending approval. IoT sensors online."); st.metric("System Uptime","99.9%")
-        else: st.error("Demo: admin/admin")
+    u = st.text_input("ID", placeholder="admin"); p = st.text_input("Pass", type="password", placeholder="admin")
+    if st.button("Login"):
+        if u=="admin": st.success("Welcome DC - 2 evacuations pending"); st.metric("Uptime","99.9%")
+        else: st.error("Use admin/admin")
