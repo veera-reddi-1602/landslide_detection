@@ -4,3 +4,4 @@ streamlit-folium
 scikit-learn
 pandas
 plotly
+fpdf2
