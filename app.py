@@ -2,34 +2,37 @@ import streamlit as st, pickle, folium, pandas as pd, plotly.express as px, plot
 from streamlit_folium import st_folium
 import datetime, random, os, numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from fpdf import FPDF
 
-st.set_page_config(page_title="NER Kavach - Real PDF Fixed", layout="wide", page_icon="🛡️")
+st.set_page_config(page_title="NER Kavach Fixed", layout="wide", page_icon="🛡️")
 
-# --- CSS LIGHT THEME - CLEAR LETTERS ---
+# --- TRY IMPORT PDF - IF FAIL, APP STILL WORKS ---
+try:
+    from fpdf import FPDF
+    PDF_AVAILABLE = True
+except:
+    PDF_AVAILABLE = False
+
+# CSS - CLEAR
 st.markdown("""
 <style>
 .stApp { background: #f8fafc; }
-h1,h2,h3,h4,p,label,span { color: #0f172a!important; }
-div[data-testid="stMetric"] { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+h1,h2,h3,p,label { color: #0f172a!important; }
+div[data-testid="stMetric"] { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 15px; }
 .stTabs [data-baseweb="tab-list"] { background: white; border-radius: 12px; padding: 6px; border: 1px solid #e2e8f0; }
-.stTabs [data-baseweb="tab"] { color: #475569; font-weight: 600; }
 .stTabs [aria-selected="true"] { background: #0ea5e9!important; color: white!important; }
-.ticker { background: linear-gradient(90deg, #dc2626, #ea580c); color: white!important; padding: 10px 16px; border-radius: 10px; font-weight: 700; }
+.ticker { background: linear-gradient(90deg, #dc2626, #ea580c); color: white!important; padding: 10px; border-radius: 10px; font-weight: 700; }
 .ticker * { color: white!important; }
-.village-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin: 8px 0; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown(f"""
-<div style="background: white; padding: 18px 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
-<h1 style="margin:0;">🛡️ NER KAVACH</h1><p style="color:#64748b!important;">MDoNER Command Center | {datetime.datetime.now().strftime('%d %b %Y %I:%M %p')} | ● LIVE</p>
+<div style="background: white; padding: 18px; border-radius: 16px; border: 1px solid #e2e8f0;">
+<h1 style="margin:0;">🛡️ NER KAVACH</h1><p style="color:#64748b!important;">MDoNER Command Center | {datetime.datetime.now().strftime('%d %b %Y')} | LIVE</p>
 </div>
 """, unsafe_allow_html=True)
-st.markdown(f'<div class="ticker">🚨 LIVE: IMD 320mm | NH-6 Blocked at Cherapunji | 3 Villages HIGH Risk</div>', unsafe_allow_html=True)
 st.write("")
 
-# --- MODEL ---
+# MODEL
 @st.cache_resource
 def load_model():
     try:
@@ -41,55 +44,56 @@ def load_model():
     return RandomForestClassifier().fit(X,y)
 model = load_model()
 
-# --- REAL PDF FUNCTION - THIS WAS MISSING ---
+# PDF FUNCTION - FIXED FOR NEW FPDF2
 def create_real_pdf(district, rain, soil, villages):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "MDoNER - NER KAVACH Official Report", ln=True, align='C')
-    pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Date: {datetime.datetime.now().strftime('%d-%m-%Y %H:%M')} | District: {district}", ln=True, align='C')
-    pdf.ln(8)
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, f"1. LIVE DATA: Rainfall {rain}mm, Soil Moisture {soil}%", ln=True)
-    pdf.set_font("Arial", "", 11)
-    pdf.cell(0, 6, "Satellite: ISRO Bhuvan | Source: IMD + NASA SMAP + SRTM DEM", ln=True)
-    pdf.ln(5)
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, "2. VILLAGE RISK ASSESSMENT (AI 88.5% Accurate)", ln=True)
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(40, 7, "Village", 1); pdf.cell(20, 7, "Risk", 1); pdf.cell(20, 7, "Prob", 1); pdf.cell(25, 7, "Pop", 1); pdf.cell(75, 7, "Action", 1, ln=True)
-    pdf.set_font("Arial", "", 10)
-    for v in villages:
-        act = "EVACUATE NOW" if v['risk']=="HIGH" else "ALERT" if v['risk']=="MEDIUM" else "SAFE"
-        pdf.cell(40, 7, v['name'], 1); pdf.cell(20, 7, v['risk'], 1); pdf.cell(20, 7, f"{v['prob']*100:.0f}%", 1); pdf.cell(25, 7, str(v['pop']), 1); pdf.cell(75, 7, act, 1, ln=True)
-    pdf.ln(5)
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, "3. INFRASTRUCTURE & SHELTERS", ln=True)
-    pdf.set_font("Arial", "", 11)
-    pdf.cell(0, 6, "- NH-6 BLOCKED at Cherapunji km 45-47 due to landslide debris", ln=True)
-    pdf.cell(0, 6, "- SH-5 PARTIALLY BLOCKED near Dawki", ln=True)
-    pdf.cell(0, 6, "- Safe Route: Shillong-Nongstoin-Dawki (45km Green Corridor)", ln=True)
-    pdf.cell(0, 6, "- Shelters Ready: Shillong Camp (500), Cherapunji School (200), Dawki Hall (300)", ln=True)
-    pdf.ln(5)
-    pdf.set_font("Arial", "B", 11)
-    pdf.multi_cell(0, 6, f"RECOMMENDATION: Immediate evacuation of {sum(1 for v in villages if v['risk']=='HIGH')} HIGH risk villages in {district}. Rainfall {rain}mm exceeds threshold 250mm. Deploy NDRF teams. Send SMS alerts in Khasi/Hindi/English.")
-    pdf.ln(8)
-    pdf.set_font("Arial", "I", 8)
-    pdf.cell(0, 6, "System Generated Report - NER KAVACH AI - For District Collector Official Use - Contact: mdoner-nerkavach@gov.in", ln=True)
-    return bytes(pdf.output())
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "MDoNER - NER KAVACH Official Report", ln=True, align='C')
+        pdf.set_font("Arial", "", 10)
+        pdf.cell(0, 6, f"Date: {datetime.datetime.now().strftime('%d-%m-%Y %H:%M')} | District: {district}", ln=True, align='C')
+        pdf.ln(8)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, f"1. LIVE DATA: Rainfall {rain}mm, Soil {soil}%", ln=True)
+        pdf.set_font("Arial", "", 11)
+        pdf.cell(0, 6, "Satellite: ISRO Bhuvan | IMD + NASA", ln=True)
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "2. VILLAGE RISK", ln=True)
+        pdf.set_font("Arial", "B", 10)
+        pdf.cell(35, 7, "Village", 1); pdf.cell(20, 7, "Risk", 1); pdf.cell(20, 7, "Prob", 1); pdf.cell(25, 7, "Pop", 1); pdf.cell(70, 7, "Action", 1, ln=True)
+        pdf.set_font("Arial", "", 10)
+        for v in villages:
+            act = "EVACUATE NOW" if v['risk']=="HIGH" else "ALERT" if v['risk']=="MEDIUM" else "SAFE"
+            pdf.cell(35, 7, v['name'], 1); pdf.cell(20, 7, v['risk'], 1); pdf.cell(20, 7, f"{v['prob']*100:.0f}%", 1); pdf.cell(25, 7, str(v['pop']), 1); pdf.cell(70, 7, act, 1, ln=True)
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 8, "3. INFRASTRUCTURE", ln=True)
+        pdf.set_font("Arial", "", 11)
+        pdf.cell(0, 6, "- NH-6 BLOCKED at Cherapunji km 45-47", ln=True)
+        pdf.cell(0, 6, "- SH-5 PARTIALLY BLOCKED near Dawki", ln=True)
+        pdf.cell(0, 6, "- Safe Route: Shillong-Nongstoin-Dawki (45km)", ln=True)
+        pdf.cell(0, 6, "- Shelters: Shillong 500, Cherapunji 200, Dawki 300", ln=True)
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 11)
+        pdf.multi_cell(0, 6, f"RECOMMENDATION: Evacuate {sum(1 for v in villages if v['risk']=='HIGH')} villages in {district}. Rain {rain}mm > threshold.")
+        # NEW METHOD - works for all fpdf2 versions
+        return pdf.output()
+    except Exception as e:
+        st.error(f"PDF Error: {e}")
+        return None
 
-# --- SIDEBAR ---
+# SIDEBAR
 with st.sidebar:
     st.markdown("### 🎛️ MISSION CONTROL")
     district = st.selectbox("📍 District", ["East Khasi Hills", "West Sikkim", "Papum Pare"])
     rain = st.slider("IMD Rainfall (mm)", 0, 600, 320, 10)
     soil = st.slider("NASA Soil Moisture %", 0, 100, 82)
-    search = st.text_input("🔍 Search Village", placeholder="Cherapunji...")
+    search = st.text_input("🔍 Search Village")
     st.metric("🛰️ IoT - Cherapunji", f"{random.randint(78,96)}%", "↑ Critical")
 
-# --- VILLAGES ---
+# VILLAGES
 base = [
     {"name":"Cherapunji","lat":25.30,"lon":91.70,"slope":45,"elev":1484,"road":50,"pop":10000},
     {"name":"Mawsynram","lat":25.29,"lon":91.58,"slope":48,"elev":1400,"road":70,"pop":1200},
@@ -108,13 +112,11 @@ for v in base:
 if not villages: villages = base[:2]
 df = pd.DataFrame(villages)
 
-# METRICS
 m1,m2,m3,m4 = st.columns(4)
 m1.metric("🔴 High Risk", f"{sum(1 for v in villages if v['risk']=='HIGH')}")
 m2.metric("👥 At Risk", f"{sum(v['pop'] for v in villages if v['risk']=='HIGH'):,}")
 m3.metric("🛣️ Blocked", "2 Roads")
 m4.metric("🏠 Shelters", "3 Ready")
-st.write("")
 
 t1,t2,t3,t4,t5,t6,t7 = st.tabs(["🗺️ Live Map","📊 Analytics","🔮 AI Forecast","🚨 Alert Center","👥 Crowdsource","📜 History","🔐 Admin"])
 
@@ -124,7 +126,7 @@ with t1:
     m = folium.Map(location=[sel_v['lat'], sel_v['lon']], zoom_start=11, tiles="OpenStreetMap")
     for v in villages:
         folium.CircleMarker([v['lat'],v['lon']], radius=22+v['prob']*35, color=v['color'], fill=True, fill_color=v['color'], fill_opacity=0.7, popup=f"{v['name']} {v['risk']}").add_to(m)
-    st_folium(m, width=850, height=520)
+    st_folium(m, width=850, height=500)
 
 with t2:
     st.plotly_chart(px.bar(df, x='name', y='prob', color='risk', color_discrete_map={'HIGH':'#dc2626','MEDIUM':'#ea580c','LOW':'#16a34a'}), use_container_width=True)
@@ -138,29 +140,23 @@ with t3:
     st.plotly_chart(px.bar(shap, x="Impact", y="Feature", orientation='h', title="SHAP"), use_container_width=True)
 
 with t4:
-    st.subheader("🚨 Alert Center - Real PDF with Live Data")
-    c1,c2 = st.columns([2,1])
-    with c1:
-        lang = st.radio("Language", ["English","Hindi","Khasi"], horizontal=True)
-        msgs = {"English":f"EVACUATE {district} {rain}mm HIGH risk","Hindi":"भारी भूस्खलन चेतावनी","Khasi":"Ka jingmaham"}
-        st.info(msgs[lang])
-        st.divider()
-        st.markdown(f"**PDF will include:** Rainfall `{rain}mm`, Soil `{soil}%`, District `{district}`, {len(villages)} villages")
-        st.dataframe(pd.DataFrame([{"Village":v['name'],"Risk":v['risk'],"Prob":f"{v['prob']*100:.0f}%"} for v in villages]), use_container_width=True)
+    st.subheader("🚨 Alert Center - Real PDF")
+    if not PDF_AVAILABLE:
+        st.error("fpdf2 not installed! Add fpdf2 to requirements.txt and reboot app")
+    st.markdown(f"**Live Data:** Rainfall `{rain}mm` | Soil `{soil}%` | District `{district}`")
+    st.dataframe(pd.DataFrame([{"Village":v['name'],"Risk":v['risk'],"Prob":f"{v['prob']*100:.0f}%"} for v in villages]), use_container_width=True)
 
-        # SINGLE BUTTON GENERATES REAL PDF
-        pdf_data = create_real_pdf(district, rain, soil, villages)
+    pdf_bytes = create_real_pdf(district, rain, soil, villages)
+    if pdf_bytes:
         st.download_button(
-            label="📄 ⬇️ DOWNLOAD REAL OFFICIAL PDF (With Live Rainfall, Soil, Risk, NH Blocked)",
-            data=pdf_data,
-            file_name=f"NER_KAVACH_Report_{district}_{datetime.date.today()}.pdf",
+            label="📄 ⬇️ DOWNLOAD REAL PDF (Official Report)",
+            data=pdf_bytes,
+            file_name=f"NER_KAVACH_{district}_{datetime.date.today()}.pdf",
             mime="application/pdf",
             use_container_width=True,
             type="primary"
         )
-        st.success("✅ This is REAL PDF - Open it, you will see rainfall, soil, villages, NH blocked, shelters, everything!")
-    with c2:
-        st.info("PDF Contains:\n- Rainfall\n- Soil Moisture\n- Risk Table\n- NH Blocked\n- Shelters\n- Recommendation")
+        st.success("✅ Click above to download REAL PDF - Contains rainfall, soil, risk, NH blocked, shelters")
 
 with t5:
     with st.form("c"):
@@ -169,7 +165,7 @@ with t5:
 
 with t6:
     h = pd.DataFrame([{"year":y,"landslides":random.randint(15,45)} for y in range(2018,2025)])
-    st.plotly_chart(px.area(h, x="year", y="landslides", title="Landslides 2018-2024"), use_container_width=True)
+    st.plotly_chart(px.area(h, x="year", y="landslides"), use_container_width=True)
 
 with t7:
     u = st.text_input("ID", placeholder="admin"); p = st.text_input("Pass", type="password", placeholder="admin")
